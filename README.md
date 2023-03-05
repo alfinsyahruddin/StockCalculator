@@ -1,3 +1,4 @@
 # StockCalculator
 
-A description of this package.
+Swift Package for stock calculation.
+
