@@ -44,16 +44,75 @@ final class StockCalculatorTests: XCTestCase {
         XCTAssertEqual(tradingReturn, expectedTradingReturn)
     }
     
-    func testCalculateAutoRejects() throws {
+    func testCalculateAutoRejectsAsymmetric() throws {
         let sut = StockCalculator()
         
         let autoRejects = sut.calculateAutoRejects(
-            closePrice: 100,
+            price: 100,
             type: .asymmetric,
-            brokerFee: BrokerFee(buy: 0, sell: 0)
+            limit: 3
          )
         
-        XCTAssertEqual(autoRejects.ara.first?.price, 135)
+        let expectedAutoRejects = AutoRejects(
+            ara: [
+                AutoReject(price: 135, priceChange: 35, percentage: 35, totalPercentage: 35),
+                AutoReject(price: 182, priceChange: 47, percentage: 34.81, totalPercentage: 82),
+                AutoReject(price: 244, priceChange: 62, percentage: 34.07, totalPercentage: 144)
+            ],
+            arb: [
+                AutoReject(price: 93, priceChange: -7, percentage: -7, totalPercentage: -7),
+                AutoReject(price: 87, priceChange: -6, percentage: -6.45, totalPercentage: -13),
+                AutoReject(price: 81, priceChange: -6, percentage: -6.9, totalPercentage: -19)
+            ]
+        )
+        
+        XCTAssertEqual(autoRejects, expectedAutoRejects)
+    }
+    
+    func testCalculateAutoRejectsSymmetric() throws {
+        let sut = StockCalculator()
+        
+        let autoRejects = sut.calculateAutoRejects(
+            price: 150,
+            type: .symmetric,
+            limit: 2
+         )
+        
+        let expectedAutoRejects = AutoRejects(
+            ara: [
+                AutoReject(price: 202, priceChange: 52, percentage: 34.67, totalPercentage: 34.67),
+                AutoReject(price: 252, priceChange: 50, percentage: 24.75, totalPercentage: 68)
+            ],
+            arb: [
+                AutoReject(price: 98, priceChange: -52, percentage: -34.67, totalPercentage: -34.67),
+                AutoReject(price: 64, priceChange: -34, percentage: -34.69, totalPercentage: -57.33)
+            ]
+        )
+        
+        XCTAssertEqual(autoRejects, expectedAutoRejects)
+    }
+    
+    func testCalculateAutoRejectsAcceleration() throws {
+        let sut = StockCalculator()
+        
+        let autoRejects = sut.calculateAutoRejects(
+            price: 5000,
+            type: .acceleration,
+            limit: 2
+         )
+        
+        let expectedAutoRejects = AutoRejects(
+            ara: [
+                AutoReject(price: 5500, priceChange: 500, percentage: 10, totalPercentage: 10),
+                AutoReject(price: 6050, priceChange: 550, percentage: 10, totalPercentage: 21)
+            ],
+            arb: [
+                AutoReject(price: 4500, priceChange: -500, percentage: -10, totalPercentage: -10),
+                AutoReject(price: 4050, priceChange: -450, percentage: -10, totalPercentage: -19)
+            ]
+        )
+        
+        XCTAssertEqual(autoRejects, expectedAutoRejects)
     }
     
     func testCalculateProfitPerTick() throws {

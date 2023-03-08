@@ -7,9 +7,14 @@
 
 import Foundation
 
-public struct AutoReject {
+public struct AutoReject: Equatable {
     public let price: Double
     public let priceChange: Double
     public let percentage: Double
     public let totalPercentage: Double
+}
+
+public struct AutoRejects: Equatable {
+    public let ara: [AutoReject]
+    public let arb: [AutoReject]
 }

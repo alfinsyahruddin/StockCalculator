@@ -52,28 +52,53 @@ public class StockCalculator {
     }
     
     public func calculateAutoRejects(
-        closePrice: Double,
+        price: Double,
         type: AutoRejectType,
-        brokerFee: BrokerFee = BrokerFee(buy: 0, sell: 0),
         limit: Int = 5
-    ) -> (ara: [AutoReject], arb: [AutoReject]) {
-        return (
-            ara: [
+    ) -> AutoRejects {
+        var ara: [AutoReject] = []
+        var arb: [AutoReject] = []
+
+        // ARA
+        for _ in 0..<limit {
+            let lastPrice = ara.last?.price ?? price
+            
+            let newPrice = self.getTickerByPercentage(lastPrice, percentage: type.getPercentage(price: lastPrice).ara)
+            let percentage = self.calculatePercentage(newPrice - lastPrice, lastPrice)
+                    
+            ara.append(
                 AutoReject(
-                    price: 0,
-                    priceChange: 0,
-                    percentage: 0,
-                    totalPercentage: 0
+                    price: newPrice,
+                    priceChange: newPrice - lastPrice,
+                    percentage: percentage,
+                    totalPercentage: self.calculatePercentage(newPrice - price, price)
                 )
-            ],
-            arb: [
+            )
+        }
+        
+        
+        // ARB
+        for _ in 0..<limit {
+            let lastPrice = arb.last?.price ?? price
+            
+            let newPrice = self.getTickerByPercentage(lastPrice, percentage: type.getPercentage(price: lastPrice).arb)
+            let percentage = self.calculatePercentage(newPrice - lastPrice, lastPrice)
+                    
+            arb.append(
                 AutoReject(
-                    price: 0,
-                    priceChange: 0,
-                    percentage: 0,
-                    totalPercentage: 0
+                    price: newPrice,
+                    priceChange: newPrice - lastPrice,
+                    percentage: percentage,
+                    totalPercentage: self.calculatePercentage(newPrice - price, price)
                 )
-            ]
+            )
+        }
+        
+       
+        
+        return AutoRejects(
+            ara: ara,
+            arb: arb
         )
     }
     
@@ -96,6 +121,28 @@ public class StockCalculator {
         }
        
         return results
+    }
+    
+    // MARK: - Private Methods
+    
+    private func getTickerByPercentage(_ lastPrice: Double, percentage: Double) -> Double {
+        let price = (lastPrice * (percentage / 100)) + lastPrice
+        
+        
+        if price.truncatingRemainder(dividingBy: self.getFraction(price)) == 0 {
+            return price
+        }
+        
+        var ticker: Double = 0
+        
+        while self.calculatePercentage(
+            (percentage < 0 ? ticker : ticker + self.getFraction(ticker)) - lastPrice,
+            lastPrice
+        ) < percentage {
+            ticker += self.getFraction(ticker)
+        }
+        
+        return ticker
     }
     
     private func generateTickers(_ price: Double, limit: Int) -> [Double] {
