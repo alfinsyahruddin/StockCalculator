@@ -4,13 +4,6 @@ public class StockCalculator {
     
     public init() {}
     
-    public func calculatePercentage(
-        buyPrice: Double,
-        sellPrice: Double
-    ) -> Double {
-        return ((sellPrice - buyPrice) / buyPrice) * 100
-    }
-    
     public func calculateTradingReturn(
         buyPrice: Double,
         sellPrice: Double,
@@ -33,11 +26,11 @@ public class StockCalculator {
             calculationResult: TradingReturn.CalculationResult(
                 status: tradingReturn > 0 ? .profit : tradingReturn < 0 ? .loss : .bep,
                 tradingReturn: tradingReturn,
-                tradingReturnPercentage: (tradingReturn / buyValue) * 100,
+                tradingReturnPercentage: calculatePercentage(tradingReturn, buyValue),
                 netTradingReturn: netTradingReturn,
-                netTradingReturnPercentage: ((netTradingReturn / totalPaid) * 100).round(),
+                netTradingReturnPercentage: calculatePercentage(netTradingReturn, totalPaid),
                 totalFee: totalFee,
-                totalFeePercentage: ((totalFee / totalPaid) * 100).round()
+                totalFeePercentage: calculatePercentage(totalFee, totalPaid)
             ),
             buyDetail: TradingReturn.BuyDetail(
                 lot: lot,
@@ -96,6 +89,13 @@ public class StockCalculator {
                 price: 0
             )
         ]
+    }
+    
+    private func calculatePercentage(
+        _ a: Double,
+        _ b: Double
+    ) -> Double {
+        return ((a / b) * 100).round()
     }
 }
 
