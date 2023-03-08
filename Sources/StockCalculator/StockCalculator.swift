@@ -1,4 +1,7 @@
 public class StockCalculator {
+    /// Shares per Lot, default = 100
+    public var sharesPerLot: Double = 100
+    
     public init() {}
     
     public func calculatePercentage(
@@ -11,34 +14,46 @@ public class StockCalculator {
     public func calculateTradingReturn(
         buyPrice: Double,
         sellPrice: Double,
-        quantity: Double,
+        lot: Double,
         brokerFee: BrokerFee = BrokerFee(buy: 0, sell: 0)
     ) -> TradingReturn {
+        let buyValue = buyPrice * (lot * self.sharesPerLot)
+        let buyFee = buyValue * (brokerFee.buy / 100)
+        let totalPaid = buyValue + buyFee
+        
+        let sellValue = sellPrice * (lot * self.sharesPerLot)
+        let sellFee = sellValue * (brokerFee.sell / 100)
+        let totalReceived = sellValue - sellFee
+        
+        let tradingReturn = sellValue - buyValue
+        let totalFee = buyFee + sellFee
+        let netTradingReturn = tradingReturn - totalFee
+        
         return TradingReturn(
             calculationResult: TradingReturn.CalculationResult(
-                status: .bep,
-                tradingReturn: 0,
-                tradingReturnPercentage: 0,
-                netTradingReturn: 0,
-                netTradingReturnPercentage: 0,
-                totalFee: 0,
-                totalFeePercentage: 0
+                status: tradingReturn > 0 ? .profit : tradingReturn < 0 ? .loss : .bep,
+                tradingReturn: tradingReturn,
+                tradingReturnPercentage: (tradingReturn / buyValue) * 100,
+                netTradingReturn: netTradingReturn,
+                netTradingReturnPercentage: ((netTradingReturn / totalPaid) * 100).round(),
+                totalFee: totalFee,
+                totalFeePercentage: ((totalFee / totalPaid) * 100).round()
             ),
             buyDetail: TradingReturn.BuyDetail(
-                quantity: 0,
-                buyPrice: 0,
-                buyFee: 0,
-                buyFeePercentage: 0,
-                buyValue: 0,
-                totalPaid: 0
+                lot: lot,
+                buyPrice: buyPrice,
+                buyFee: buyFee,
+                buyFeePercentage: brokerFee.buy,
+                buyValue: buyValue,
+                totalPaid: totalPaid
             ),
             sellDetail: TradingReturn.SellDetail(
-                quantity: 0,
-                sellPrice: 0,
-                sellFee: 0,
-                sellFeePercentage: 0,
-                buyValue: 0,
-                totalReceived: 0
+                lot: lot,
+                sellPrice: sellPrice,
+                sellFee: sellFee,
+                sellFeePercentage: brokerFee.sell,
+                sellValue: sellValue,
+                totalReceived: totalReceived
             )
         )
     }
@@ -71,7 +86,7 @@ public class StockCalculator {
     
     public func calculateProfitPerTick(
         price: Double,
-        quantity: Double,
+        lot: Double,
         brokerFee: BrokerFee = BrokerFee(buy: 0, sell: 0)
     ) -> [ProfitPerTick] {
         return [
@@ -83,3 +98,4 @@ public class StockCalculator {
         ]
     }
 }
+
