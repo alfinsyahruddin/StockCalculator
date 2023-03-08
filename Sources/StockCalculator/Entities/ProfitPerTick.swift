@@ -7,8 +7,8 @@
 
 import Foundation
 
-public struct ProfitPerTick {
-    public let value: Double
-    public let percentage: Double
+public struct ProfitPerTick: Equatable {
     public let price: Double
+    public let percentage: Double
+    public let value: Double
 }

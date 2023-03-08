@@ -54,7 +54,8 @@ public class StockCalculator {
     public func calculateAutoRejects(
         closePrice: Double,
         type: AutoRejectType,
-        brokerFee: BrokerFee = BrokerFee(buy: 0, sell: 0)
+        brokerFee: BrokerFee = BrokerFee(buy: 0, sell: 0),
+        limit: Int = 5
     ) -> (ara: [AutoReject], arb: [AutoReject]) {
         return (
             ara: [
@@ -80,22 +81,65 @@ public class StockCalculator {
     public func calculateProfitPerTick(
         price: Double,
         lot: Double,
-        brokerFee: BrokerFee = BrokerFee(buy: 0, sell: 0)
+        brokerFee: BrokerFee = BrokerFee(buy: 0, sell: 0),
+        limit: Int = 5
     ) -> [ProfitPerTick] {
-        return [
-            ProfitPerTick(
-                value: 0,
-                percentage: 0,
-                price: 0
+        let tickers = self.generateTickers(price, limit: limit)
+        
+        let results: [ProfitPerTick] = tickers.map { tick in
+            let tradingReturn = self.calculateTradingReturn(buyPrice: price, sellPrice: tick, lot: lot, brokerFee: brokerFee)
+            return ProfitPerTick(
+                price: tick,
+                percentage: tradingReturn.calculationResult.netTradingReturnPercentage,
+                value: tradingReturn.calculationResult.netTradingReturn.rounded()
             )
-        ]
+        }
+       
+        return results
+    }
+    
+    private func generateTickers(_ price: Double, limit: Int) -> [Double] {
+        // Generate Tickers
+        var tickers: [Double] = [price]
+        
+        // 1. Profit
+        for _ in 0..<limit {
+            let prevPrice = tickers.last!
+            let newPrice = prevPrice + self.getFraction(prevPrice)
+            tickers.append(newPrice)
+        }
+        
+        // 2. Loss
+        for _ in 0..<limit {
+            let prevPrice = tickers.first!
+            let newPrice = prevPrice - self.getFraction(prevPrice)
+            tickers.insert(newPrice, at: 0)
+        }
+        
+        return tickers
+    }
+    
+    private func getFraction(_ price: Double) -> Double {
+        switch price {
+        case 0..<200:
+            return 1
+        case 200..<500:
+            return 2
+        case 500..<2000:
+            return 5
+        case 2000..<5000:
+            return 10
+        default:
+            return 25
+        }
     }
     
     private func calculatePercentage(
-        _ a: Double,
-        _ b: Double
+        _ value: Double,
+        _ total: Double
     ) -> Double {
-        return ((a / b) * 100).round()
+        return ((value / total) * 100).round()
     }
 }
+
 

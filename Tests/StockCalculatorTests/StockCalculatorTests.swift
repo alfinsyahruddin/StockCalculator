@@ -51,7 +51,7 @@ final class StockCalculatorTests: XCTestCase {
             closePrice: 100,
             type: .asymmetric,
             brokerFee: BrokerFee(buy: 0, sell: 0)
-     )
+         )
         
         XCTAssertEqual(autoRejects.ara.first?.price, 135)
     }
@@ -62,10 +62,47 @@ final class StockCalculatorTests: XCTestCase {
         let profitPerTick = sut.calculateProfitPerTick(
             price: 100,
             lot: 1,
-            brokerFee: BrokerFee(buy: 0, sell: 0)
+            brokerFee: BrokerFee(buy: 0, sell: 0),
+            limit: 3
          )
         
-        XCTAssertEqual(profitPerTick.first?.percentage, 1)
+        
+        let expectedProfitPerTick = [
+            ProfitPerTick(price: 97, percentage: -3, value: -300),
+            ProfitPerTick(price: 98, percentage: -2, value: -200),
+            ProfitPerTick(price: 99, percentage: -1, value: -100),
+            ProfitPerTick(price: 100, percentage: 0, value: 0),
+            ProfitPerTick(price: 101, percentage: 1, value: 100),
+            ProfitPerTick(price: 102, percentage: 2, value: 200),
+            ProfitPerTick(price: 103, percentage: 3, value: 300),
+        ]
+        
+        XCTAssertEqual(profitPerTick, expectedProfitPerTick)
+    }
+    
+    
+    func testCalculateProfitPerTickWithBrokerFee() throws {
+        let sut = StockCalculator()
+        
+        let profitPerTick = sut.calculateProfitPerTick(
+            price: 100,
+            lot: 1,
+            brokerFee: BrokerFee(buy: 0.15, sell: 0.25),
+            limit: 3
+         )
+        
+        
+        let expectedProfitPerTick = [
+            ProfitPerTick(price: 97, percentage: -3.39, value: -339),
+            ProfitPerTick(price: 98, percentage: -2.39, value: -240),
+            ProfitPerTick(price: 99, percentage: -1.4, value: -140),
+            ProfitPerTick(price: 100, percentage: -0.4, value: -40),
+            ProfitPerTick(price: 101, percentage: 0.6, value: 60),
+            ProfitPerTick(price: 102, percentage: 1.59, value: 160),
+            ProfitPerTick(price: 103, percentage: 2.59, value: 259),
+        ]
+        
+        XCTAssertEqual(profitPerTick, expectedProfitPerTick)
     }
 }
 
