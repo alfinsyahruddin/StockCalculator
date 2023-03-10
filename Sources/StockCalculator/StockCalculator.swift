@@ -120,7 +120,7 @@ public class StockCalculator {
             )
         }
        
-        return results.filter { $0.price > 0 }
+        return results.filter { $0.price >= 0 }
     }
     
     // MARK: - Private Methods
