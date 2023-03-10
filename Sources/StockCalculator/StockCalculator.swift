@@ -98,7 +98,7 @@ public class StockCalculator {
         
         return AutoRejects(
             ara: ara,
-            arb: arb
+            arb: arb.filter { $0.price >= 0 && ($0.price >= 50 || type == .acceleration) }
         )
     }
     
@@ -120,7 +120,7 @@ public class StockCalculator {
             )
         }
        
-        return results
+        return results.filter { $0.price > 0 }
     }
     
     // MARK: - Private Methods
