@@ -15,6 +15,11 @@ public struct AutoReject: Equatable {
 }
 
 public struct AutoRejects: Equatable {
-    public let ara: [AutoReject]
-    public let arb: [AutoReject]
+    public var ara: [AutoReject]
+    public var arb: [AutoReject]
+    
+    public init(ara: [AutoReject], arb: [AutoReject]) {
+        self.ara = ara
+        self.arb = arb
+    }
 }
