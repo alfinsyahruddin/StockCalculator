@@ -8,7 +8,7 @@
 import Foundation
 
 /// Broker Fee is a trading fee that charged by broker (in percentage).
-public struct BrokerFee {
+public struct BrokerFee: Equatable {
     public let buy: Double
     public let sell: Double
     
