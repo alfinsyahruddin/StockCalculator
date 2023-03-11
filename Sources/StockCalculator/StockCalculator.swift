@@ -24,7 +24,7 @@ public class StockCalculator {
         
         return TradingReturn(
             calculationResult: TradingReturn.CalculationResult(
-                status: tradingReturn > 0 ? .profit : tradingReturn < 0 ? .loss : .bep,
+                status: netTradingReturn > 0 ? .profit : netTradingReturn < 0 ? .loss : .bep,
                 tradingReturn: tradingReturn,
                 tradingReturnPercentage: calculatePercentage(tradingReturn, buyValue),
                 netTradingReturn: netTradingReturn,
